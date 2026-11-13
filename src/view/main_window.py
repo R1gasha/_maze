@@ -3,6 +3,7 @@ from PySide6.QtCore import Qt
 
 from view.maze_widget import MazeWidget
 from models.maze_model import Maze
+from models.maze_solver import MazeSolver
 
 
 class MainWindow(QWidget):
@@ -12,8 +13,8 @@ class MainWindow(QWidget):
 
         self.maze_widget = MazeWidget(self)
 
-        maze = Maze.from_file('datasets/test_eller.txt')
-        self.maze_widget.set_maze(maze)
+        self._maze = Maze.from_file('datasets/test_eller.txt')
+        self.maze_widget.set_maze(self._maze)
 
         # try:
         #     maze = Maze.from_file('datasets/test_1.txt')
@@ -30,3 +31,8 @@ class MainWindow(QWidget):
 
         # Окно подстраивается под содержимое + отступы = 500 + 40 + 40 = 580
         layout.setSizeConstraint(layout.SizeConstraint.SetFixedSize)
+
+        #self.maze_widget.set_solution([(0, 0), (0, 1), (1, 1), (2, 1)])
+
+        path = MazeSolver.solve(self._maze, (0, 0), (-1, 6))
+        self.maze_widget.set_solution(path)
