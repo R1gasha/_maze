@@ -1,13 +1,17 @@
 import sys
 from PySide6.QtWidgets import QApplication
+
 from view.main_window import MainWindow
-from models.maze_model import Maze
+from controller.maze_controller import MazeController
 
 
 def main() -> int:
     app = QApplication(sys.argv)
-    window = MainWindow()
-    window.show()
+
+    view = MainWindow()
+    controller = MazeController(view)     # ← связка
+    view.show()
+
     return app.exec()
 
 
