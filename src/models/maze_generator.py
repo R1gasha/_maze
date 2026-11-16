@@ -12,6 +12,9 @@ class MazeGenerator:
         if rows < 1 or cols < 1:
             raise ValueError(f"Size must be >= 1 {rows}×{cols}")
 
+        if rows > 50 or cols > 50:
+            raise ValueError(f"Size must be <= 50 {rows}×{cols}")
+
         rng = random.Random(seed)
 
         right_walls  = [[1] * cols for _ in range(rows)]   # стены — убираем
@@ -58,15 +61,15 @@ class MazeGenerator:
                 bottom_walls[i][j] = 0
                 has_bottom[j] = True
 
-            # --- Переход к следующей строке: обновить sets на месте ---
+            # update sets
             i += 1
             for c in range(cols):
                 if not has_bottom[c]:
-                    sets[c] = count                        # новый id
+                    sets[c] = count
                     count += 1
                 # else: sets[c] наследует id — не трогаем
 
-        # --- Последняя строка (i = rows - 1) ---
+        # last row
         for k in range(cols - 1):
             if sets[k] == sets[k + 1]:
                 right_walls[i][k] = 1
@@ -74,9 +77,10 @@ class MazeGenerator:
                 right_walls[i][k] = 0
                 MazeGenerator._merge(sets, sets[k + 1], sets[k])
 
-        # --- Границы ---
+        # right walls
         for k in range(cols):
             bottom_walls[i][k] = 1
+        # bottom walls
         for r in range(rows):
             right_walls[r][cols - 1] = 1
 
@@ -91,16 +95,20 @@ class MazeGenerator:
                 sets[k] = new_id
 
     @staticmethod
-    def make_file(maze: Maze) -> str:
+    def make_file(maze: Maze, output_dir: str | None = None) -> str:
+        if output_dir is None:
+            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            output_dir = os.path.join(base_dir, "datasets")
+        else:
+            output_dir = str(output_dir)
 
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        output_dir = os.path.join(base_dir, 'datasets')
+        os.makedirs(output_dir, exist_ok=True)
 
-        file_name = f'maze_eller _{MazeGenerator._timestamp()}.txt'
+        file_name = f'maze_eller_{MazeGenerator._timestamp()}.txt'
         path = os.path.join(output_dir, file_name)
 
         
-        with open(path, 'w') as file:
+        with open(path, 'w', encoding="utf-8") as file:
             file.write(f'{maze.rows} {maze.cols}\n' )
             for index in range(maze.rows):
                 file.write(' '.join(map(str, maze.right_walls[index])) + '\n')

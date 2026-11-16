@@ -4,13 +4,24 @@ from collections import deque
 class MazeSolver:
     @staticmethod
     def solve(maze: Maze, start, end) -> list[tuple[int, int]] | None:
-        right_walls = maze.right_walls
-        bottom_walls = maze.bottom_walls
+        if not isinstance(start, tuple) or not isinstance(end, tuple):
+            raise ValueError("Not valid data")
+        if len(start) != 2 or len(end) != 2:
+            raise ValueError("Not valid data")
+
         cols = maze.cols
         rows = maze.rows
+        
+        if start[0] < 0 or start[0] >= rows or start[1] < 0 or start[1] >= cols:
+            raise IndexError("Output index range")
+        if end[0] < 0 or end[0] >= rows or end[1] < 0 or end[1] >= cols:
+            raise IndexError("Output index range")
+        right_walls = maze.right_walls
+        bottom_walls = maze.bottom_walls
+
         came_from = MazeSolver._bfs(start, end, cols, rows, right_walls, bottom_walls)
-        solve = MazeSolver._get_path(start, end, came_from)
-        return solve
+        route = MazeSolver._get_path(start, end, came_from)
+        return route
 
     @staticmethod
     def _bfs(start_point, end_point, cols, rows, matrix_r, matrix_b):
@@ -20,9 +31,6 @@ class MazeSolver:
 
         if start_point == end_point:
             return {start_point: end_point}
-
-        if came_from is None:
-            came_from = dict()
 
         coord_i = start_point[0]
         coord_j = start_point[1]
@@ -65,5 +73,8 @@ class MazeSolver:
             return None
         route = [end]
         while route[-1] != start:
-            route.append(parent[route[-1]])
+            p = parent.get(route[-1])
+            if p is None:
+                return None
+            route.append(p)
         return route[::-1]

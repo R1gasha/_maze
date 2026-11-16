@@ -11,8 +11,11 @@ class Maze:
     @classmethod
     def from_file(cls, path: str):
 
-        with open(path, 'r') as file:
-            lines = [line.strip() for line in file]
+        with open(path, 'r', encoding="utf-8") as file:
+            lines = [line.strip() for line in file if line.strip()]
+
+        if not lines:
+            raise ValueError("Empty file")
 
         try:
             lines = [list(map(int, line.split())) for line in lines if line]
@@ -22,9 +25,9 @@ class Maze:
         if len(lines[0]) != 2:
             raise ValueError("Invalid set size matrix")
 
-        rows, cols = lines[0][0], lines[0][1]
+        rows, cols = lines[0]
 
-        if cols < 0 or cols > 50 or rows < 0 or rows > 50:
+        if not (1 <= rows <= 50 and 1 <= cols <= 50):
             raise ValueError("Invalid set size matrix")
 
         except_lines = 1 + 2 * rows
@@ -32,14 +35,23 @@ class Maze:
         if len(lines) != except_lines:
             raise ValueError("Invalid rows matrix")
 
-        right_walls = [[0 for _ in range(cols)] for _ in range(rows)]
-        bottom_walls = [[0 for _ in range(cols)] for _ in range(rows)]
+        right_walls = []
+        bottom_walls = []
+        for i in range(rows):
+            row = lines[1 + i]
+            if len(row) != cols:                                    # ← длина строки
+                raise ValueError("Invalid file")
+            if any(v not in (0, 1) for v in row):                   # ← 0/1
+                raise ValueError("Invalid file")
+            right_walls.append(row)
 
         for i in range(rows):
-            right_walls[i] = lines[1 + i]
-
-        for i in range(rows):
-            bottom_walls[i] = lines[i + rows + 1]
+            row = lines[1 + rows + i]
+            if len(row) != cols:
+                raise ValueError("Invalid file")
+            if any(v not in (0, 1) for v in row):
+                raise ValueError("Invalid file")
+            bottom_walls.append(row)
 
         return cls(rows, cols, right_walls, bottom_walls)
 
